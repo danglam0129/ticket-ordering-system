@@ -15,5 +15,6 @@
         <module>kafka/kafka-consumer</module>
         <module>kafka/kafka-model</module>
         <module>kafka/kafka-producer</module>
+        <module>saga</module>
     </modules>
 </project>

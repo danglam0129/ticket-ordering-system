@@ -7,6 +7,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>order-domain-core</artifactId>
-    <name>Archetype - order-domain-core</name>
-    <url>http://maven.apache.org</url>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>common-domain</artifactId>
+        </dependency>
+    </dependencies>
 </project>
