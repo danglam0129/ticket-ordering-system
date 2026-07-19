@@ -1,0 +1,47 @@
+package com.ticket.ordering.system.order.service.messaging.listener.kafka;
+
+import com.ticket.ordering.system.kafka.consumer.KafkaConsumer;
+import com.ticket.ordering.system.kafka.order.avro.model.PaymentResponseAvroModel;
+import com.ticket.ordering.system.kafka.order.avro.model.PaymentStatus;
+import com.ticket.ordering.system.order.service.domain.ports.input.message.listener.payment.PaymentResponseMessageListener;
+import com.ticket.ordering.system.order.service.messaging.mapper.OrderMessagingDataMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Slf4j
+@Component
+public class PaymentResponseKafkaListener implements KafkaConsumer<PaymentResponseAvroModel> {
+
+    private final PaymentResponseMessageListener paymentResponseMessageListener;
+    private final OrderMessagingDataMapper orderMessagingDataMapper;
+
+    public PaymentResponseKafkaListener(PaymentResponseMessageListener paymentResponseMessageListener,
+                                        OrderMessagingDataMapper orderMessagingDataMapper) {
+        this.paymentResponseMessageListener = paymentResponseMessageListener;
+        this.orderMessagingDataMapper = orderMessagingDataMapper;
+    }
+
+    @Override
+    public void receive(List<PaymentResponseAvroModel> messages,
+                        List<String> keys,
+                        List<Integer> partitions,
+                        List<Long> offsets) {
+        log.info("{} number of payment responses received with keys: {}, partitions: {} and offsets: {}",
+                messages.size(), keys, partitions, offsets);
+
+        messages.forEach(paymentResponseAvroModel -> {
+            if (PaymentStatus.COMPLETED == paymentResponseAvroModel.getPaymentStatus()) {
+                log.info("Processing successful payment for order id: {}", paymentResponseAvroModel.getOrderId());
+                paymentResponseMessageListener.paymentCompleted(orderMessagingDataMapper
+                        .paymentResponseAvroModelToPaymentResponse(paymentResponseAvroModel));
+            } else if (PaymentStatus.CANCELLED == paymentResponseAvroModel.getPaymentStatus() ||
+                    PaymentStatus.FAILED == paymentResponseAvroModel.getPaymentStatus()) {
+                log.info("Processing unsuccessful payment for order id: {}", paymentResponseAvroModel.getOrderId());
+                paymentResponseMessageListener.paymentCancelled(orderMessagingDataMapper
+                        .paymentResponseAvroModelToPaymentResponse(paymentResponseAvroModel));
+            }
+        });
+    }
+}

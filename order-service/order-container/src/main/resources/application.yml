@@ -1,0 +1,10 @@
+server:
+  port: 8181
+
+order-service:
+  payment-request-topic-name: payment-request
+  payment-response-topic-name: payment-response
+  ticket-reservation-request-topic-name: ticket-reservation-request
+  ticket-reservation-response-topic-name: ticket-reservation-response
+  ticket-approval-request-topic-name: ticket-approval-request
+  ticket-approval-response-topic-name: ticket-approval-response

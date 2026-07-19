@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class Order extends AggregateRoot<OrderId> {
     private final CustomerId customerId;
-    private final OrderItem orderItem;
+    private final List<OrderItem> items;
     private final Money price;
 
     private List<String> failureMessages;
@@ -26,7 +26,7 @@ public class Order extends AggregateRoot<OrderId> {
     private Order(Builder builder) {
         super.setId(builder.orderId);
         this.customerId = builder.customerId;
-        this.orderItem = builder.orderItem;
+        this.items = builder.items;
         this.price = builder.price;
 
         this.failureMessages = builder.failureMessages;
@@ -49,7 +49,9 @@ public class Order extends AggregateRoot<OrderId> {
 
     private void initializeOrderItem(){
         Long orderItemId = 1L;
-        orderItem.initializeOrderItem(super.getId(), new OrderItemId(orderItemId));
+        for (OrderItem orderItem : items) {
+            orderItem.initializeOrderItem(super.getId(), new OrderItemId(orderItemId++));
+        }
     }
 
     private void validateInitialOrder(){
@@ -62,11 +64,13 @@ public class Order extends AggregateRoot<OrderId> {
     }
 
     private void validateOrderItem(){
-        if(orderItem == null){
-            throw new OrderDomainException("Order item must be present!");
+        if(items == null || items.isEmpty()){
+            throw new OrderDomainException("Order items must be present!");
         }
-        if(!orderItem.isPriceValid()){
-            throw new OrderDomainException("Order item price is not valid!");
+        for (OrderItem orderItem : items) {
+            if(!orderItem.isPriceValid()){
+                throw new OrderDomainException("Order item price is not valid!");
+            }
         }
     }
 
@@ -74,15 +78,24 @@ public class Order extends AggregateRoot<OrderId> {
         if(price == null || !price.isGreaterThanZero()){
             throw new OrderDomainException("Total price must be greater than zero!");
         }
-        Money orderItemTotal = orderItem.getSubTotal();
+        Money orderItemTotal = items.stream()
+                .map(OrderItem::getSubTotal)
+                .reduce(Money.ZERO, Money::add);
         if(!price.equals(orderItemTotal)){
             throw new OrderDomainException("Total price doesn't match");
         }
     }
 
-    public void pay(){
+    public void reserve() {
         if(orderStatus != OrderStatus.PENDING){
             throw new OrderDomainException("Order status must be PENDING");
+        }
+        orderStatus = OrderStatus.RESERVED;
+    }
+
+    public void pay(){
+        if(orderStatus != OrderStatus.RESERVED){
+            throw new OrderDomainException("Order status must be RESERVED");
         }
         orderStatus =  OrderStatus.PAID;
     }
@@ -125,8 +138,8 @@ public class Order extends AggregateRoot<OrderId> {
     public CustomerId getCustomerId() {
         return customerId;
     }
-    public OrderItem getOrderItem() {
-        return orderItem;
+    public List<OrderItem> getItems() {
+        return items;
     }
     public Money getPrice() {
         return price;
@@ -148,7 +161,7 @@ public class Order extends AggregateRoot<OrderId> {
     public static final class Builder {
         private OrderId orderId;
         private CustomerId customerId;
-        private OrderItem orderItem;
+        private List<OrderItem> items;
         private Money price;
         private List<String> failureMessages;
         private TrackingId trackingId;
@@ -167,8 +180,8 @@ public class Order extends AggregateRoot<OrderId> {
             return this;
         }
 
-        public Builder orderItem(OrderItem val) {
-            orderItem = val;
+        public Builder items(List<OrderItem> val) {
+            items = val;
             return this;
         }
 

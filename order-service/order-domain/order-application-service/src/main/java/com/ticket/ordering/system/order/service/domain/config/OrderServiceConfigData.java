@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 public class OrderServiceConfigData {
     private String paymentRequestTopicName;
     private String paymentResponseTopicName;
+    private String ticketReservationRequestTopicName;
+    private String ticketReservationResponseTopicName;
     private String ticketApprovalRequestTopicName;
     private String ticketApprovalResponseTopicName;
 }

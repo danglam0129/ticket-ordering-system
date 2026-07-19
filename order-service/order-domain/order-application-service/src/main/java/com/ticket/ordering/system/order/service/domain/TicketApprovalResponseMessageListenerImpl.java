@@ -17,9 +17,12 @@ import static com.ticket.ordering.system.order.service.domain.entity.Order.FAILU
 public class TicketApprovalResponseMessageListenerImpl implements TicketApprovalResponseMessageListener {
 
     private final OrderApprovalSaga orderApprovalSaga;
+    private final OrderOutboxHelper orderOutboxHelper;
 
-    public TicketApprovalResponseMessageListenerImpl(OrderApprovalSaga orderApprovalSaga) {
+    public TicketApprovalResponseMessageListenerImpl(OrderApprovalSaga orderApprovalSaga,
+                                                     OrderOutboxHelper orderOutboxHelper) {
         this.orderApprovalSaga = orderApprovalSaga;
+        this.orderOutboxHelper = orderOutboxHelper;
     }
 
     @Override
@@ -31,6 +34,7 @@ public class TicketApprovalResponseMessageListenerImpl implements TicketApproval
     @Override
     public void orderRejected(TicketApprovalResponse ticketApprovalResponse) {
         OrderCancelledEvent domainEvent = orderApprovalSaga.rollback(ticketApprovalResponse);
+        orderOutboxHelper.save(domainEvent);
         log.info("Publishing order cancelled event for order id: {} with failure messages: {}",
                 ticketApprovalResponse.getOrderId(),
                 String.join(FAILURE_MESSAGE_DELIMITER,

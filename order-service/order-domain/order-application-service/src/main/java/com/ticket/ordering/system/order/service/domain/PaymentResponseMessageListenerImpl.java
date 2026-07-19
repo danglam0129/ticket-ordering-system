@@ -17,14 +17,18 @@ import static com.ticket.ordering.system.order.service.domain.entity.Order.FAILU
 public class PaymentResponseMessageListenerImpl implements PaymentResponseMessageListener {
 
     private final OrderPaymentSaga orderPaymentSaga;
+    private final OrderOutboxHelper orderOutboxHelper;
 
-    public PaymentResponseMessageListenerImpl(OrderPaymentSaga orderPaymentSaga) {
+    public PaymentResponseMessageListenerImpl(OrderPaymentSaga orderPaymentSaga,
+                                              OrderOutboxHelper orderOutboxHelper) {
         this.orderPaymentSaga = orderPaymentSaga;
+        this.orderOutboxHelper = orderOutboxHelper;
     }
 
     @Override
     public void paymentCompleted(PaymentResponse paymentResponse) {
         OrderPaidEvent domainEvent = orderPaymentSaga.process(paymentResponse);
+        orderOutboxHelper.save(domainEvent);
         log.info("Publishing OrderPaidEvent for order id: {}", paymentResponse.getOrderId());
         domainEvent.fire();
     }

@@ -10,7 +10,7 @@ public class Money {
     public static final Money ZERO = new Money(BigDecimal.ZERO);
 
     public Money(BigDecimal amount) {
-        this.amount = amount;
+        this.amount = amount == null ? null : setScale(amount);
     }
 
     public boolean isGreaterThanZero() {
@@ -42,7 +42,7 @@ public class Money {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Money money = (Money) o;
-        return amount.equals(money.amount);
+        return amount.compareTo(money.amount) == 0;
     }
 
     @Override

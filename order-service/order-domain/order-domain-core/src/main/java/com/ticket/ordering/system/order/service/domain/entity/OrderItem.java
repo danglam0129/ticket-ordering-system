@@ -3,22 +3,20 @@ package com.ticket.ordering.system.order.service.domain.entity;
 import com.ticket.ordering.system.domain.entity.BaseEntity;
 import com.ticket.ordering.system.domain.valueobject.Money;
 import com.ticket.ordering.system.domain.valueobject.OrderId;
+import com.ticket.ordering.system.domain.valueobject.TicketId;
 import com.ticket.ordering.system.order.service.domain.valueobject.OrderItemId;
-import com.ticket.ordering.system.order.service.domain.exception.OrderDomainException;
-
-import java.util.List;
 
 public class OrderItem extends BaseEntity<OrderItemId> {
     private OrderId orderId;
-    private final List<Ticket> tickets;
-    private final int quantity;
+    private final TicketId ticketId;
+    private final Money price;
     private final Money subTotal;
 
     public OrderItem(Builder builder){
         super.setId(builder.orderItemId);
         this.orderId = builder.orderId;
-        this.tickets = builder.tickets;
-        this.quantity = builder.quantity;
+        this.ticketId = builder.ticketId;
+        this.price = builder.price;
         this.subTotal = builder.subTotal;
     }
 
@@ -28,42 +26,21 @@ public class OrderItem extends BaseEntity<OrderItemId> {
     }
 
     public boolean isPriceValid() {
-        if (tickets == null || tickets.isEmpty() || quantity != tickets.size() ||
+        if (ticketId == null || price == null || !price.isGreaterThanZero() ||
                 subTotal == null || !subTotal.isGreaterThanZero()) {
             return false;
         }
-
-        Money ticketTotal = Money.ZERO;
-        for (Ticket ticket : tickets) {
-            if (ticket.getPrice() == null || !ticket.getPrice().isGreaterThanZero()) {
-                return false;
-            }
-            ticketTotal = ticketTotal.add(ticket.getPrice());
-        }
-        return subTotal.equals(ticketTotal);
-    }
-
-    public void confirmTicketInformation(Ticket confirmedTicket) {
-        Ticket currentTicket = tickets.stream()
-                .filter(ticket -> ticket.equals(confirmedTicket))
-                .findFirst()
-                .orElseThrow(() -> new OrderDomainException("Ticket with id " +
-                        confirmedTicket.getId().getValue() + " is not part of this order item"));
-
-        currentTicket.updateWithConfirmedInformation(
-                confirmedTicket.getEvent(),
-                confirmedTicket.getPrice(),
-                confirmedTicket.getSeat());
+        return subTotal.equals(price);
     }
 
     public OrderId getOrderId() {
         return orderId;
     }
-    public List<Ticket> getTickets() {
-        return tickets;
+    public TicketId getTicketId() {
+        return ticketId;
     }
-    public int getQuantity() {
-        return quantity;
+    public Money getPrice() {
+        return price;
     }
     public Money getSubTotal() {
         return subTotal;
@@ -76,8 +53,8 @@ public class OrderItem extends BaseEntity<OrderItemId> {
     public static final class Builder {
         private OrderId orderId;
         private OrderItemId orderItemId;
-        private List<Ticket> tickets;
-        private int quantity;
+        private TicketId ticketId;
+        private Money price;
         private Money subTotal;
 
         private Builder() {}
@@ -92,13 +69,13 @@ public class OrderItem extends BaseEntity<OrderItemId> {
             return this;
         }
 
-        public Builder tickets(List<Ticket> val) {
-            tickets = val;
+        public Builder ticketId(TicketId val) {
+            ticketId = val;
             return this;
         }
 
-        public Builder quantity(int val) {
-            quantity = val;
+        public Builder price(Money val) {
+            price = val;
             return this;
         }
 
