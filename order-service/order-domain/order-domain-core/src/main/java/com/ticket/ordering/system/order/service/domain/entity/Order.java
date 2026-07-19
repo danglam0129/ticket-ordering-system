@@ -116,7 +116,8 @@ public class Order extends AggregateRoot<OrderId> {
     }
 
     public void cancel(List<String> failureMessages) {
-        if (!(orderStatus == OrderStatus.CANCELLING || orderStatus == OrderStatus.PENDING)) {
+        if (!(orderStatus == OrderStatus.CANCELLING || orderStatus == OrderStatus.PENDING ||
+                orderStatus == OrderStatus.RESERVED)) {
             throw new OrderDomainException("Order is not in correct state for cancel operation!");
         }
         orderStatus = OrderStatus.CANCELLED;
