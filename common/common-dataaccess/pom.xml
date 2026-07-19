@@ -8,6 +8,5 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>common-dataaccess</artifactId>
-    <name>Archetype - common-dataaccess</name>
-    <url>http://maven.apache.org</url>
+
 </project>
