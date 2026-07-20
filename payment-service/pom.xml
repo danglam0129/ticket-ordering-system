@@ -11,11 +11,9 @@
     <name>Archetype - payment-service</name>
     <url>http://maven.apache.org</url>
     <modules>
-        <module>payment-container</module>
+        <module>payment-domain</module>
         <module>payment-dataaccess</module>
         <module>payment-messaging</module>
-        <module>payment-domain</module>
-        <module>payment-domain/payment-domain-core</module>
-        <module>payment-domain/payment-application-service</module>
+        <module>payment-container</module>
     </modules>
 </project>

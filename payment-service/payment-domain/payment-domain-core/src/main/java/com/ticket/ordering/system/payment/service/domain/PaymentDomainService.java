@@ -1,0 +1,29 @@
+package com.ticket.ordering.system.payment.service.domain;
+
+import com.ticket.ordering.system.domain.event.publisher.DomainEventPublisher;
+import com.ticket.ordering.system.payment.service.domain.entity.CreditEntry;
+import com.ticket.ordering.system.payment.service.domain.entity.CreditHistory;
+import com.ticket.ordering.system.payment.service.domain.entity.Payment;
+import com.ticket.ordering.system.payment.service.domain.event.PaymentCancelledEvent;
+import com.ticket.ordering.system.payment.service.domain.event.PaymentCompletedEvent;
+import com.ticket.ordering.system.payment.service.domain.event.PaymentEvent;
+import com.ticket.ordering.system.payment.service.domain.event.PaymentFailedEvent;
+
+import java.util.List;
+
+public interface PaymentDomainService {
+
+    PaymentEvent validateAndInitiatePayment(Payment payment,
+                                            CreditEntry creditEntry,
+                                            List<CreditHistory> creditHistories,
+                                            List<String> failureMessages,
+                                            DomainEventPublisher<PaymentCompletedEvent> paymentCompletedEventPublisher,
+                                            DomainEventPublisher<PaymentFailedEvent> paymentFailedEventPublisher);
+
+    PaymentEvent validateAndCancelPayment(Payment payment,
+                                          CreditEntry creditEntry,
+                                          List<CreditHistory> creditHistories,
+                                          List<String> failureMessages,
+                                          DomainEventPublisher<PaymentCancelledEvent> paymentCancelledEventPublisher,
+                                          DomainEventPublisher<PaymentFailedEvent> paymentFailedEventPublisher);
+}

@@ -1,0 +1,6 @@
+server:
+  port: 8182
+
+payment-service:
+  payment-request-topic-name: payment-request
+  payment-response-topic-name: payment-response

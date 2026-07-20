@@ -7,6 +7,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>payment-domain</artifactId>
+    <packaging>pom</packaging>
     <name>Archetype - payment-domain</name>
     <url>http://maven.apache.org</url>
+
+    <modules>
+        <module>payment-domain-core</module>
+        <module>payment-application-service</module>
+    </modules>
 </project>

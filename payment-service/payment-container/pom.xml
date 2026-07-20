@@ -9,4 +9,19 @@
     <artifactId>payment-container</artifactId>
     <name>Archetype - payment-container</name>
     <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>payment-application-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>payment-dataaccess</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>payment-messaging</artifactId>
+        </dependency>
+    </dependencies>
 </project>
