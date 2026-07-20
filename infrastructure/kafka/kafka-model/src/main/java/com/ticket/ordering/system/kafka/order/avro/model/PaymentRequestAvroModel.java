@@ -3,14 +3,18 @@ package com.ticket.ordering.system.kafka.order.avro.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Getter
+@Setter
 @Builder
 @ToString
+@NoArgsConstructor
 @AllArgsConstructor
 public class PaymentRequestAvroModel {
     private String id;

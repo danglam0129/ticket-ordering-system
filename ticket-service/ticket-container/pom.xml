@@ -3,11 +3,29 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.ticket.ordering.system</groupId>
-        <artifactId>ticket-ordering-system</artifactId>
+        <artifactId>ticket-service</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>ticket-container</artifactId>
     <name>Archetype - ticket-container</name>
     <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>ticket-application-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>ticket-application</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>ticket-dataaccess</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>ticket-messaging</artifactId>
+        </dependency>
+    </dependencies>
 </project>

@@ -3,11 +3,29 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.ticket.ordering.system</groupId>
-        <artifactId>ticket-ordering-system</artifactId>
+        <artifactId>ticket-service</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>ticket-messaging</artifactId>
     <name>Archetype - ticket-messaging</name>
     <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>ticket-application-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>kafka-producer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>kafka-consumer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>kafka-model</artifactId>
+        </dependency>
+    </dependencies>
 </project>

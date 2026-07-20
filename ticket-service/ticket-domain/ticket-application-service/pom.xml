@@ -9,4 +9,19 @@
     <artifactId>ticket-application-service</artifactId>
     <name>Archetype - ticket-application-service</name>
     <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>ticket-domain-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>common-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+    </dependencies>
 </project>

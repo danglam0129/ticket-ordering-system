@@ -7,6 +7,14 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>ticket-service</artifactId>
+    <packaging>pom</packaging>
     <name>Archetype - ticket-service</name>
     <url>http://maven.apache.org</url>
+    <modules>
+        <module>ticket-domain</module>
+        <module>ticket-application</module>
+        <module>ticket-container</module>
+        <module>ticket-dataaccess</module>
+        <module>ticket-messaging</module>
+    </modules>
 </project>

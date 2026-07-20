@@ -1,0 +1,19 @@
+server:
+  port: 8184
+
+logging:
+  level:
+    com.ticket.ordering.system: DEBUG
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres?currentSchema=customer&binaryTransfer=true&reWriteBatchedInserts=true}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+      platform: postgres
+      schema-locations: classpath:init-schema.sql
+      data-locations: classpath:init-data.sql
