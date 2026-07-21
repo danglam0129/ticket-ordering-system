@@ -1,20 +1,16 @@
-CREATE SCHEMA IF NOT EXISTS "order";
+DROP SCHEMA IF EXISTS "order" CASCADE;
+
+CREATE SCHEMA "order";
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-DO $$
-BEGIN
-    CREATE TYPE "order".order_status AS ENUM ('PENDING', 'RESERVED', 'PAID', 'APPROVED', 'CANCELLING', 'CANCELLED');
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
+DROP TYPE IF EXISTS "order".order_status CASCADE;
 
-DO $$
-BEGIN
-    CREATE TYPE "order".outbox_status AS ENUM ('STARTED', 'COMPLETED', 'FAILED');
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
+CREATE TYPE "order".order_status AS ENUM ('PENDING', 'RESERVED', 'PAID', 'APPROVED', 'CANCELLING', 'CANCELLED');
+
+DROP TYPE IF EXISTS "order".outbox_status CASCADE;
+
+CREATE TYPE "order".outbox_status AS ENUM ('STARTED', 'COMPLETED', 'FAILED');
 
 CREATE TABLE IF NOT EXISTS "order".orders
 (

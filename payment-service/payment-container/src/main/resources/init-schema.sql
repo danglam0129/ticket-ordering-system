@@ -1,20 +1,16 @@
-CREATE SCHEMA IF NOT EXISTS payment;
+DROP SCHEMA IF EXISTS payment CASCADE;
+
+CREATE SCHEMA payment;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-DO $$
-BEGIN
-    CREATE TYPE payment.payment_status AS ENUM ('COMPLETED', 'CANCELLED', 'FAILED');
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
+DROP TYPE IF EXISTS payment.payment_status CASCADE;
 
-DO $$
-BEGIN
-    CREATE TYPE payment.transaction_type AS ENUM ('DEBIT', 'CREDIT');
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
+CREATE TYPE payment.payment_status AS ENUM ('COMPLETED', 'CANCELLED', 'FAILED');
+
+DROP TYPE IF EXISTS payment.transaction_type CASCADE;
+
+CREATE TYPE payment.transaction_type AS ENUM ('DEBIT', 'CREDIT');
 
 CREATE TABLE IF NOT EXISTS payment.payments
 (

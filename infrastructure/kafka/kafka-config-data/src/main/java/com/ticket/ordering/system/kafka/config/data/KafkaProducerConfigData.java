@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class KafkaProducerConfigData {
     private String keySerializerClass = "org.apache.kafka.common.serialization.StringSerializer";
     private String valueSerializerClass = "org.springframework.kafka.support.serializer.JsonSerializer";
-    private String compressionType = "snappy";
+    private String compressionType = "none";
     private String acks = "all";
     private Integer batchSize = 16384;
     private Integer batchSizeBoostFactor = 100;

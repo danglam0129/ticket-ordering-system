@@ -1,13 +1,12 @@
-CREATE SCHEMA IF NOT EXISTS ticket;
+DROP SCHEMA IF EXISTS ticket CASCADE;
+
+CREATE SCHEMA ticket;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-DO $$
-BEGIN
-    CREATE TYPE ticket.ticket_status AS ENUM ('AVAILABLE', 'RESERVED', 'SOLD');
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
+DROP TYPE IF EXISTS ticket.ticket_status CASCADE;
+
+CREATE TYPE ticket.ticket_status AS ENUM ('AVAILABLE', 'RESERVED', 'SOLD');
 
 CREATE TABLE IF NOT EXISTS ticket.tickets
 (

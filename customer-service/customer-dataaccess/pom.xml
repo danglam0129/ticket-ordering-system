@@ -9,4 +9,23 @@
     <artifactId>customer-dataaccess</artifactId>
     <name>Archetype - customer-dataaccess</name>
     <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>customer-application-serivce</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>common-dataaccess</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+    </dependencies>
 </project>

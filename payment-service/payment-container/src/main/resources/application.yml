@@ -29,3 +29,46 @@ spring:
       platform: postgres
       schema-locations: classpath:init-schema.sql
       data-locations: classpath:init-data.sql
+
+kafka-config:
+  bootstrap-servers: ${KAFKA_CONFIG_BOOTSTRAP_SERVERS:localhost:19092,localhost:29092,localhost:39092}
+  num-of-partitions: ${KAFKA_CONFIG_NUM_OF_PARTITIONS:3}
+  replication-factor: ${KAFKA_CONFIG_REPLICATION_FACTOR:3}
+  topic-names:
+    - payment-request
+    - payment-response
+    - ticket-reservation-request
+    - ticket-reservation-response
+    - ticket-approval-request
+    - ticket-approval-response
+
+kafka-producer-config:
+  key-serializer-class: org.apache.kafka.common.serialization.StringSerializer
+  value-serializer-class: org.springframework.kafka.support.serializer.JsonSerializer
+  compression-type: none
+  acks: all
+  batch-size: 16384
+  batch-size-boost-factor: 100
+  linger-ms: 5
+  request-timeout-ms: 60000
+  retry-count: 5
+  add-type-info-headers: true
+
+kafka-consumer-config:
+  key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+  consumer-group-id: ticket-ordering-system-consumer
+  payment-request-consumer-group-id: payment-request-topic-consumer
+  auto-offset-reset: earliest
+  batch-listener: true
+  auto-startup: true
+  concurrency-level: 3
+  session-timeout-ms: 10000
+  heartbeat-interval-ms: 3000
+  max-poll-interval-ms: 300000
+  poll-timeout-ms: 150
+  max-poll-records: 500
+  max-partition-fetch-bytes-default: 1048576
+  max-partition-fetch-bytes-boost-factor: 1
+  trusted-packages: com.ticket.ordering.system.kafka.order.avro.model
+  use-type-headers: true

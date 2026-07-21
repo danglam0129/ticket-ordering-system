@@ -12,12 +12,36 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>customer-application-serivce</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>customer-application</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>customer-dataaccess</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ticket.ordering.system</groupId>
+            <artifactId>customer-messaging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.ticket.ordering.system.customer.service.domain.CustomerServiceApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

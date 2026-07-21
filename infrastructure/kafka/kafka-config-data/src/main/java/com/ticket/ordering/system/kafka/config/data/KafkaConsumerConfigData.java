@@ -11,6 +11,12 @@ public class KafkaConsumerConfigData {
     private String keyDeserializer = "org.apache.kafka.common.serialization.StringDeserializer";
     private String valueDeserializer = "org.springframework.kafka.support.serializer.JsonDeserializer";
     private String consumerGroupId = "ticket-ordering-system-consumer";
+    private String paymentRequestConsumerGroupId = "payment-request-topic-consumer";
+    private String paymentResponseConsumerGroupId = "payment-response-topic-consumer";
+    private String ticketReservationRequestConsumerGroupId = "ticket-reservation-request-topic-consumer";
+    private String ticketReservationResponseConsumerGroupId = "ticket-reservation-response-topic-consumer";
+    private String ticketApprovalRequestConsumerGroupId = "ticket-approval-request-topic-consumer";
+    private String ticketApprovalResponseConsumerGroupId = "ticket-approval-response-topic-consumer";
     private String autoOffsetReset = "earliest";
     private Boolean batchListener = true;
     private Boolean autoStartup = true;

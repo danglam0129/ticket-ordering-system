@@ -1,0 +1,234 @@
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-14}
+    container_name: ticket-postgres
+    ports:
+      - "${POSTGRES_HOST_PORT:-55432}:5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ticket-ordering-system
+
+  kafka-1:
+    image: confluentinc/cp-kafka:${KAFKA_VERSION:-7.6.1}
+    hostname: kafka-1
+    container_name: ticket-kafka-1
+    ports:
+      - "19092:19092"
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:19092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,PLAINTEXT_HOST://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+    volumes:
+      - kafka_1_data:/var/lib/kafka/data
+    networks:
+      - ticket-ordering-system
+
+  kafka-2:
+    image: confluentinc/cp-kafka:${KAFKA_VERSION:-7.6.1}
+    hostname: kafka-2
+    container_name: ticket-kafka-2
+    ports:
+      - "29092:29092"
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+    volumes:
+      - kafka_2_data:/var/lib/kafka/data
+    networks:
+      - ticket-ordering-system
+
+  kafka-3:
+    image: confluentinc/cp-kafka:${KAFKA_VERSION:-7.6.1}
+    hostname: kafka-3
+    container_name: ticket-kafka-3
+    ports:
+      - "39092:39092"
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 3
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:39092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9092,PLAINTEXT_HOST://localhost:39092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+    volumes:
+      - kafka_3_data:/var/lib/kafka/data
+    networks:
+      - ticket-ordering-system
+
+  order-service:
+    container_name: ticket-order-service
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker-compose/service.Dockerfile
+      args:
+        SERVICE_MODULE: order-service/order-container
+        JAR_FILE: order-service/order-container/target/order-container-0.0.1-SNAPSHOT.jar
+    ports:
+      - "8181:8181"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/postgres?currentSchema=order&binaryTransfer=true&reWriteBatchedInserts=true&stringtype=unspecified"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      KAFKA_CONFIG_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    networks:
+      - ticket-ordering-system
+
+  payment-service:
+    container_name: ticket-payment-service
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker-compose/service.Dockerfile
+      args:
+        SERVICE_MODULE: payment-service/payment-container
+        JAR_FILE: payment-service/payment-container/target/payment-container-0.0.1-SNAPSHOT.jar
+    ports:
+      - "8182:8182"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/postgres?currentSchema=payment&binaryTransfer=true&reWriteBatchedInserts=true&stringtype=unspecified"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      KAFKA_CONFIG_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    networks:
+      - ticket-ordering-system
+
+  ticket-service:
+    container_name: ticket-ticket-service
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker-compose/service.Dockerfile
+      args:
+        SERVICE_MODULE: ticket-service/ticket-container
+        JAR_FILE: ticket-service/ticket-container/target/ticket-container-0.0.1-SNAPSHOT.jar
+    ports:
+      - "8183:8183"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/postgres?currentSchema=ticket&binaryTransfer=true&reWriteBatchedInserts=true&stringtype=unspecified"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      KAFKA_CONFIG_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    networks:
+      - ticket-ordering-system
+
+  customer-service:
+    container_name: ticket-customer-service
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker-compose/service.Dockerfile
+      args:
+        SERVICE_MODULE: customer-service/customer-container
+        JAR_FILE: customer-service/customer-container/target/customer-container-0.0.1-SNAPSHOT.jar
+    ports:
+      - "8184:8184"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/postgres?currentSchema=customer&binaryTransfer=true&reWriteBatchedInserts=true"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      CUSTOMER_SERVICE_JWT_SECRET: ticket-ordering-system-local-development-secret-change-me-please
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ticket-ordering-system
+
+networks:
+  ticket-ordering-system:
+    name: ${GLOBAL_NETWORK:-ticket-ordering-system}
+    driver: bridge
+
+volumes:
+  postgres_data:
+  kafka_1_data:
+  kafka_2_data:
+  kafka_3_data:

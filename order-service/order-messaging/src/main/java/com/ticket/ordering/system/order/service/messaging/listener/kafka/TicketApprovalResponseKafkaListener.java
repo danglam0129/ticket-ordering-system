@@ -6,6 +6,10 @@ import com.ticket.ordering.system.kafka.order.avro.model.TicketApprovalResponseA
 import com.ticket.ordering.system.order.service.domain.ports.input.message.listener.ticketapproval.TicketApprovalResponseMessageListener;
 import com.ticket.ordering.system.order.service.messaging.mapper.OrderMessagingDataMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,10 +30,12 @@ public class TicketApprovalResponseKafkaListener implements KafkaConsumer<Ticket
     }
 
     @Override
-    public void receive(List<TicketApprovalResponseAvroModel> messages,
-                        List<String> keys,
-                        List<Integer> partitions,
-                        List<Long> offsets) {
+    @KafkaListener(id = "${kafka-consumer-config.ticket-approval-response-consumer-group-id}",
+            topics = "${order-service.ticket-approval-response-topic-name}")
+    public void receive(@Payload List<TicketApprovalResponseAvroModel> messages,
+                        @Header(KafkaHeaders.RECEIVED_KEY) List<String> keys,
+                        @Header(KafkaHeaders.RECEIVED_PARTITION) List<Integer> partitions,
+                        @Header(KafkaHeaders.OFFSET) List<Long> offsets) {
         log.info("{} number of ticket approval responses received with keys: {}, partitions: {} and offsets: {}",
                 messages.size(), keys, partitions, offsets);
 

@@ -7,6 +7,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>customer-domain</artifactId>
+    <packaging>pom</packaging>
     <name>Archetype - customer-domain</name>
     <url>http://maven.apache.org</url>
+
+    <modules>
+        <module>customer-domain-core</module>
+        <module>customer-application-serivce</module>
+    </modules>
 </project>

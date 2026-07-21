@@ -5,7 +5,21 @@ logging:
   level:
     com.ticket.ordering.system: DEBUG
 
+customer-service:
+  jwt-issuer: ticket-ordering-system
+  jwt-secret: ${CUSTOMER_SERVICE_JWT_SECRET:ticket-ordering-system-local-development-secret-change-me-please}
+  access-token-expiration-minutes: ${CUSTOMER_SERVICE_ACCESS_TOKEN_EXPIRATION_MINUTES:15}
+  refresh-token-expiration-days: ${CUSTOMER_SERVICE_REFRESH_TOKEN_EXPIRATION_DAYS:7}
+
 spring:
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres?currentSchema=customer&binaryTransfer=true&reWriteBatchedInserts=true}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
