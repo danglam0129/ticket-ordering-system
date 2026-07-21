@@ -23,7 +23,6 @@ import com.ticket.ordering.system.order.service.domain.ports.input.service.Order
 import com.ticket.ordering.system.order.service.domain.ports.output.message.publisher.ticketreservation.OrderCreatedTicketReservationRequestMessagePublisher;
 import com.ticket.ordering.system.order.service.domain.ports.output.repository.CustomerRepository;
 import com.ticket.ordering.system.order.service.domain.ports.output.repository.OrderIdempotencyRepository;
-import com.ticket.ordering.system.order.service.domain.ports.output.repository.OrderOutboxRepository;
 import com.ticket.ordering.system.order.service.domain.ports.output.repository.OrderRepository;
 import com.ticket.ordering.system.order.service.domain.valueobject.OrderItemId;
 import com.ticket.ordering.system.order.service.domain.valueobject.TrackingId;
@@ -83,9 +82,6 @@ class OrderApplicationServiceTest {
     private OrderIdempotencyRepository orderIdempotencyRepository;
 
     @Autowired
-    private OrderOutboxRepository orderOutboxRepository;
-
-    @Autowired
     private OrderCreatedTicketReservationRequestMessagePublisher orderCreatedTicketReservationRequestMessagePublisher;
 
     @BeforeEach
@@ -93,7 +89,6 @@ class OrderApplicationServiceTest {
         reset(orderRepository,
                 customerRepository,
                 orderIdempotencyRepository,
-                orderOutboxRepository,
                 orderCreatedTicketReservationRequestMessagePublisher);
 
         when(customerRepository.findCustomer(CUSTOMER_ID)).thenReturn(Optional.of(new Customer(new CustomerId(CUSTOMER_ID))));
@@ -109,7 +104,6 @@ class OrderApplicationServiceTest {
         assertEquals("Order created successfully", createOrderResponse.getMessage());
         assertNotNull(createOrderResponse.getOrderTrackingId());
         verify(orderRepository).save(any(Order.class));
-        verify(orderOutboxRepository).save(any());
         verify(orderCreatedTicketReservationRequestMessagePublisher).publish(any());
     }
 

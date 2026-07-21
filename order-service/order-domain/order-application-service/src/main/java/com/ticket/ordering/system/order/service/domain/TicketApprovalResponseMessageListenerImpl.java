@@ -5,6 +5,7 @@ import com.ticket.ordering.system.order.service.domain.event.OrderCancelledEvent
 import com.ticket.ordering.system.order.service.domain.ports.input.message.listener.ticketapproval.TicketApprovalResponseMessageListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Collections;
@@ -17,24 +18,22 @@ import static com.ticket.ordering.system.order.service.domain.entity.Order.FAILU
 public class TicketApprovalResponseMessageListenerImpl implements TicketApprovalResponseMessageListener {
 
     private final OrderApprovalSaga orderApprovalSaga;
-    private final OrderOutboxHelper orderOutboxHelper;
 
-    public TicketApprovalResponseMessageListenerImpl(OrderApprovalSaga orderApprovalSaga,
-                                                     OrderOutboxHelper orderOutboxHelper) {
+    public TicketApprovalResponseMessageListenerImpl(OrderApprovalSaga orderApprovalSaga) {
         this.orderApprovalSaga = orderApprovalSaga;
-        this.orderOutboxHelper = orderOutboxHelper;
     }
 
     @Override
+    @Transactional
     public void orderApproved(TicketApprovalResponse ticketApprovalResponse) {
         orderApprovalSaga.process(ticketApprovalResponse);
         log.info("Order is approved for order id: {}", ticketApprovalResponse.getOrderId());
     }
 
     @Override
+    @Transactional
     public void orderRejected(TicketApprovalResponse ticketApprovalResponse) {
         OrderCancelledEvent domainEvent = orderApprovalSaga.rollback(ticketApprovalResponse);
-        orderOutboxHelper.save(domainEvent);
         log.info("Publishing order cancelled event for order id: {} with failure messages: {}",
                 ticketApprovalResponse.getOrderId(),
                 String.join(FAILURE_MESSAGE_DELIMITER,

@@ -10,7 +10,7 @@ CREATE TYPE "order".order_status AS ENUM ('PENDING', 'RESERVED', 'PAID', 'APPROV
 
 DROP TYPE IF EXISTS "order".outbox_status CASCADE;
 
-CREATE TYPE "order".outbox_status AS ENUM ('STARTED', 'COMPLETED', 'FAILED');
+CREATE TYPE "order".outbox_status AS ENUM ('STARTED', 'PROCESSING', 'COMPLETED', 'FAILED');
 
 CREATE TABLE IF NOT EXISTS "order".orders
 (
@@ -53,14 +53,23 @@ CREATE TABLE IF NOT EXISTS "order".order_idempotency
 CREATE TABLE IF NOT EXISTS "order".order_outbox
 (
     id uuid NOT NULL,
+    saga_id character varying NOT NULL,
     aggregate_id character varying NOT NULL,
     event_type character varying NOT NULL,
+    topic_name character varying NOT NULL,
+    message_key character varying NOT NULL,
+    payload_type character varying NOT NULL,
     payload text NOT NULL,
     created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
     status "order".outbox_status NOT NULL,
+    retry_count integer NOT NULL DEFAULT 0,
+    last_error text,
     CONSTRAINT order_outbox_pkey PRIMARY KEY (id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON "order".orders (customer_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_ticket_id ON "order".order_items (ticket_id);
 CREATE INDEX IF NOT EXISTS idx_order_outbox_status ON "order".order_outbox (status);
+CREATE INDEX IF NOT EXISTS idx_order_outbox_status_retry_created_at
+    ON "order".order_outbox (status, retry_count, created_at);

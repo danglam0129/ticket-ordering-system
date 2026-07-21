@@ -44,7 +44,7 @@ public class PaymentMessagingDataMapper {
     private PaymentResponseAvroModel paymentEventToPaymentResponseAvroModel(PaymentEvent paymentEvent) {
         return PaymentResponseAvroModel.builder()
                 .id(UUID.randomUUID().toString())
-                .sagaId("")
+                .sagaId(paymentEvent.getPayment().getOrderId().getValue().toString())
                 .paymentId(paymentEvent.getPayment().getId().getValue().toString())
                 .customerId(paymentEvent.getPayment().getCustomerId().getValue().toString())
                 .orderId(paymentEvent.getPayment().getOrderId().getValue().toString())

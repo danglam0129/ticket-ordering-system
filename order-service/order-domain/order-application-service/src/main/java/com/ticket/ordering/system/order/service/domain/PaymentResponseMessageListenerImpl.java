@@ -5,6 +5,7 @@ import com.ticket.ordering.system.order.service.domain.event.OrderPaidEvent;
 import com.ticket.ordering.system.order.service.domain.ports.input.message.listener.payment.PaymentResponseMessageListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Collections;
@@ -17,23 +18,21 @@ import static com.ticket.ordering.system.order.service.domain.entity.Order.FAILU
 public class PaymentResponseMessageListenerImpl implements PaymentResponseMessageListener {
 
     private final OrderPaymentSaga orderPaymentSaga;
-    private final OrderOutboxHelper orderOutboxHelper;
 
-    public PaymentResponseMessageListenerImpl(OrderPaymentSaga orderPaymentSaga,
-                                              OrderOutboxHelper orderOutboxHelper) {
+    public PaymentResponseMessageListenerImpl(OrderPaymentSaga orderPaymentSaga) {
         this.orderPaymentSaga = orderPaymentSaga;
-        this.orderOutboxHelper = orderOutboxHelper;
     }
 
     @Override
+    @Transactional
     public void paymentCompleted(PaymentResponse paymentResponse) {
         OrderPaidEvent domainEvent = orderPaymentSaga.process(paymentResponse);
-        orderOutboxHelper.save(domainEvent);
         log.info("Publishing OrderPaidEvent for order id: {}", paymentResponse.getOrderId());
         domainEvent.fire();
     }
 
     @Override
+    @Transactional
     public void paymentCancelled(PaymentResponse paymentResponse) {
         orderPaymentSaga.rollback(paymentResponse);
         log.info("Order is rolled back for order id: {} with failure messages: {}",

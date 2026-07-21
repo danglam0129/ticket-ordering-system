@@ -29,7 +29,7 @@ public class OrderMessagingDataMapper {
         Order order = orderCreatedEvent.getOrder();
         return TicketReservationRequestAvroModel.builder()
                 .id(UUID.randomUUID().toString())
-                .sagaId("")
+                .sagaId(sagaId(order))
                 .orderId(order.getId().getValue().toString())
                 .ticketIds(ticketIds(order))
                 .createdAt(orderCreatedEvent.getCreatedAt().toInstant())
@@ -41,7 +41,7 @@ public class OrderMessagingDataMapper {
         Order order = orderReservedEvent.getOrder();
         return PaymentRequestAvroModel.builder()
                 .id(UUID.randomUUID().toString())
-                .sagaId("")
+                .sagaId(sagaId(order))
                 .customerId(order.getCustomerId().getValue().toString())
                 .orderId(order.getId().getValue().toString())
                 .price(order.getPrice().getAmount())
@@ -54,7 +54,7 @@ public class OrderMessagingDataMapper {
         Order order = orderPaidEvent.getOrder();
         return TicketApprovalRequestAvroModel.builder()
                 .id(UUID.randomUUID().toString())
-                .sagaId("")
+                .sagaId(sagaId(order))
                 .orderId(order.getId().getValue().toString())
                 .ticketIds(ticketIds(order))
                 .price(order.getPrice().getAmount())
@@ -68,7 +68,7 @@ public class OrderMessagingDataMapper {
         Order order = orderCancelledEvent.getOrder();
         return PaymentRequestAvroModel.builder()
                 .id(UUID.randomUUID().toString())
-                .sagaId("")
+                .sagaId(sagaId(order))
                 .customerId(order.getCustomerId().getValue().toString())
                 .orderId(order.getId().getValue().toString())
                 .price(order.getPrice().getAmount())
@@ -124,5 +124,10 @@ public class OrderMessagingDataMapper {
         return order.getItems().stream()
                 .map(orderItem -> orderItem.getTicketId().getValue().toString())
                 .collect(Collectors.toList());
+    }
+
+    private String sagaId(Order order) {
+        return order.getTrackingId() == null ? order.getId().getValue().toString() :
+                order.getTrackingId().getValue().toString();
     }
 }

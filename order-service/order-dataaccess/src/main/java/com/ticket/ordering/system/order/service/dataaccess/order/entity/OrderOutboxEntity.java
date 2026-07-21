@@ -27,11 +27,19 @@ public class OrderOutboxEntity {
 
     @Id
     private UUID id;
+    private String sagaId;
     private String aggregateId;
     private String eventType;
+    private String topicName;
+    private String messageKey;
+    private String payloadType;
     @Column(columnDefinition = "TEXT")
     private String payload;
     private Instant createdAt;
+    private Instant updatedAt;
     @Enumerated(EnumType.STRING)
     private OutboxStatus status;
+    private int retryCount;
+    @Column(columnDefinition = "TEXT")
+    private String lastError;
 }

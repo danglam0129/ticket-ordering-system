@@ -6,7 +6,6 @@ import com.ticket.ordering.system.order.service.domain.ports.output.message.publ
 import com.ticket.ordering.system.order.service.domain.ports.output.message.publisher.ticketreservation.OrderCreatedTicketReservationRequestMessagePublisher;
 import com.ticket.ordering.system.order.service.domain.ports.output.repository.CustomerRepository;
 import com.ticket.ordering.system.order.service.domain.ports.output.repository.OrderIdempotencyRepository;
-import com.ticket.ordering.system.order.service.domain.ports.output.repository.OrderOutboxRepository;
 import com.ticket.ordering.system.order.service.domain.ports.output.repository.OrderRepository;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -48,11 +47,6 @@ public class OrderTestConfiguration {
     @Bean
     public OrderIdempotencyRepository orderIdempotencyRepository() {
         return Mockito.mock(OrderIdempotencyRepository.class);
-    }
-
-    @Bean
-    public OrderOutboxRepository orderOutboxRepository() {
-        return Mockito.mock(OrderOutboxRepository.class);
     }
 
     @Bean

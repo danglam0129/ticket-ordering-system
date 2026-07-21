@@ -1,12 +1,11 @@
 package com.ticket.ordering.system.payment.service.messaging.publisher.kafka;
 
 import com.ticket.ordering.system.kafka.order.avro.model.PaymentResponseAvroModel;
-import com.ticket.ordering.system.kafka.producer.KafkaMessageHelper;
-import com.ticket.ordering.system.kafka.producer.service.KafkaProducer;
 import com.ticket.ordering.system.payment.service.domain.config.PaymentServiceConfigData;
 import com.ticket.ordering.system.payment.service.domain.event.PaymentFailedEvent;
 import com.ticket.ordering.system.payment.service.domain.ports.output.message.publisher.PaymentFailedMessagePublisher;
 import com.ticket.ordering.system.payment.service.messaging.mapper.PaymentMessagingDataMapper;
+import com.ticket.ordering.system.payment.service.messaging.outbox.PaymentOutboxMessageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -15,18 +14,15 @@ import org.springframework.stereotype.Component;
 public class PaymentFailedKafkaMessagePublisher implements PaymentFailedMessagePublisher {
 
     private final PaymentMessagingDataMapper paymentMessagingDataMapper;
-    private final KafkaProducer<String, PaymentResponseAvroModel> kafkaProducer;
     private final PaymentServiceConfigData paymentServiceConfigData;
-    private final KafkaMessageHelper kafkaMessageHelper;
+    private final PaymentOutboxMessageHelper paymentOutboxMessageHelper;
 
     public PaymentFailedKafkaMessagePublisher(PaymentMessagingDataMapper paymentMessagingDataMapper,
-                                              KafkaProducer<String, PaymentResponseAvroModel> kafkaProducer,
                                               PaymentServiceConfigData paymentServiceConfigData,
-                                              KafkaMessageHelper kafkaMessageHelper) {
+                                              PaymentOutboxMessageHelper paymentOutboxMessageHelper) {
         this.paymentMessagingDataMapper = paymentMessagingDataMapper;
-        this.kafkaProducer = kafkaProducer;
         this.paymentServiceConfigData = paymentServiceConfigData;
-        this.kafkaMessageHelper = kafkaMessageHelper;
+        this.paymentOutboxMessageHelper = paymentOutboxMessageHelper;
     }
 
     @Override
@@ -37,17 +33,17 @@ public class PaymentFailedKafkaMessagePublisher implements PaymentFailedMessageP
         try {
             PaymentResponseAvroModel paymentResponseAvroModel =
                     paymentMessagingDataMapper.paymentFailedEventToPaymentResponseAvroModel(domainEvent);
-            kafkaProducer.send(paymentServiceConfigData.getPaymentResponseTopicName(),
+            paymentOutboxMessageHelper.save(domainEvent.getPayment().getId().getValue().toString(),
+                    domainEvent.getClass().getSimpleName(),
+                    paymentServiceConfigData.getPaymentResponseTopicName(),
                     orderId,
-                    paymentResponseAvroModel,
-                    kafkaMessageHelper.getKafkaCallback(paymentServiceConfigData.getPaymentResponseTopicName(),
-                            paymentResponseAvroModel,
-                            orderId,
-                            "PaymentResponseAvroModel"));
-            log.info("PaymentResponseAvroModel sent to Kafka for order id: {}", orderId);
+                    paymentResponseAvroModel.getSagaId(),
+                    paymentResponseAvroModel);
+            log.info("PaymentResponseAvroModel stored in outbox for order id: {}", orderId);
         } catch (Exception e) {
-            log.error("Error while sending PaymentResponseAvroModel message to Kafka with order id: {}, error: {}",
+            log.error("Error while storing PaymentResponseAvroModel in outbox with order id: {}, error: {}",
                     orderId, e.getMessage());
+            throw new IllegalStateException("Error while storing PaymentResponseAvroModel in outbox", e);
         }
     }
 }

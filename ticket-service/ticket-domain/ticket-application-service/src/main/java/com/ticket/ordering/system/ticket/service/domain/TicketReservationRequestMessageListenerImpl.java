@@ -5,6 +5,7 @@ import com.ticket.ordering.system.ticket.service.domain.event.TicketEvent;
 import com.ticket.ordering.system.ticket.service.domain.ports.input.message.listener.ticketreservation.TicketReservationRequestMessageListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -17,6 +18,7 @@ public class TicketReservationRequestMessageListenerImpl implements TicketReserv
     }
 
     @Override
+    @Transactional
     public void reserveTickets(TicketReservationRequest ticketReservationRequest) {
         TicketEvent ticketEvent = ticketReservationRequestHelper.persistTicketReservation(ticketReservationRequest);
         fireEvent(ticketEvent);

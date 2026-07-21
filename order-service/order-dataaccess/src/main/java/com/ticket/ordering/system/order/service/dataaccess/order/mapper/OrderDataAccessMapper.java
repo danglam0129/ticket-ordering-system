@@ -56,11 +56,36 @@ public class OrderDataAccessMapper {
     public OrderOutboxEntity orderOutboxMessageToOutboxEntity(OrderOutboxMessage orderOutboxMessage) {
         return OrderOutboxEntity.builder()
                 .id(orderOutboxMessage.getId())
+                .sagaId(orderOutboxMessage.getSagaId())
                 .aggregateId(orderOutboxMessage.getAggregateId())
                 .eventType(orderOutboxMessage.getEventType())
+                .topicName(orderOutboxMessage.getTopicName())
+                .messageKey(orderOutboxMessage.getMessageKey())
+                .payloadType(orderOutboxMessage.getPayloadType())
                 .payload(orderOutboxMessage.getPayload())
                 .createdAt(orderOutboxMessage.getCreatedAt())
+                .updatedAt(orderOutboxMessage.getUpdatedAt())
                 .status(orderOutboxMessage.getStatus())
+                .retryCount(orderOutboxMessage.getRetryCount())
+                .lastError(orderOutboxMessage.getLastError())
+                .build();
+    }
+
+    public OrderOutboxMessage orderOutboxEntityToOutboxMessage(OrderOutboxEntity orderOutboxEntity) {
+        return OrderOutboxMessage.builder()
+                .id(orderOutboxEntity.getId())
+                .sagaId(orderOutboxEntity.getSagaId())
+                .aggregateId(orderOutboxEntity.getAggregateId())
+                .eventType(orderOutboxEntity.getEventType())
+                .topicName(orderOutboxEntity.getTopicName())
+                .messageKey(orderOutboxEntity.getMessageKey())
+                .payloadType(orderOutboxEntity.getPayloadType())
+                .payload(orderOutboxEntity.getPayload())
+                .createdAt(orderOutboxEntity.getCreatedAt())
+                .updatedAt(orderOutboxEntity.getUpdatedAt())
+                .status(orderOutboxEntity.getStatus())
+                .retryCount(orderOutboxEntity.getRetryCount())
+                .lastError(orderOutboxEntity.getLastError())
                 .build();
     }
 

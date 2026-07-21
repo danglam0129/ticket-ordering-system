@@ -5,13 +5,14 @@ import com.ticket.ordering.system.order.service.domain.dto.message.TicketReserva
 import com.ticket.ordering.system.order.service.domain.entity.Order;
 import com.ticket.ordering.system.order.service.domain.event.OrderReservedEvent;
 import com.ticket.ordering.system.order.service.domain.ports.output.message.publisher.payment.OrderReservedPaymentRequestMessagePublisher;
+import com.ticket.ordering.system.saga.SagaStep;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-public class OrderReservationSaga {
+public class OrderReservationSaga implements SagaStep<TicketReservationResponse, OrderReservedEvent, EmptyEvent> {
 
     private final OrderDomainService orderDomainService;
     private final OrderSagaHelper orderSagaHelper;
@@ -26,6 +27,7 @@ public class OrderReservationSaga {
     }
 
     @Transactional
+    @Override
     public OrderReservedEvent process(TicketReservationResponse ticketReservationResponse) {
         log.info("Reserving order with id: {}", ticketReservationResponse.getOrderId());
         Order order = orderSagaHelper.findOrder(ticketReservationResponse.getOrderId());
@@ -36,6 +38,7 @@ public class OrderReservationSaga {
     }
 
     @Transactional
+    @Override
     public EmptyEvent rollback(TicketReservationResponse ticketReservationResponse) {
         log.info("Cancelling order with id: {} after ticket reservation rejection",
                 ticketReservationResponse.getOrderId());

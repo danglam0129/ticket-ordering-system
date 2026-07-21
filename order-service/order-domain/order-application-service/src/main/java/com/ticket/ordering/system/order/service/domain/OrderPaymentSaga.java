@@ -5,13 +5,14 @@ import com.ticket.ordering.system.order.service.domain.dto.message.PaymentRespon
 import com.ticket.ordering.system.order.service.domain.entity.Order;
 import com.ticket.ordering.system.order.service.domain.event.OrderPaidEvent;
 import com.ticket.ordering.system.order.service.domain.ports.output.message.publisher.ticketapproval.OrderPaidTicketRequestMessagePublisher;
+import com.ticket.ordering.system.saga.SagaStep;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-public class OrderPaymentSaga {
+public class OrderPaymentSaga implements SagaStep<PaymentResponse, OrderPaidEvent, EmptyEvent> {
 
     private final OrderDomainService orderDomainService;
     private final OrderSagaHelper orderSagaHelper;
@@ -26,6 +27,7 @@ public class OrderPaymentSaga {
     }
 
     @Transactional
+    @Override
     public OrderPaidEvent process(PaymentResponse paymentResponse) {
         log.info("Completing payment for order with id: {}", paymentResponse.getOrderId());
         Order order = orderSagaHelper.findOrder(paymentResponse.getOrderId());
@@ -36,6 +38,7 @@ public class OrderPaymentSaga {
     }
 
     @Transactional
+    @Override
     public EmptyEvent rollback(PaymentResponse paymentResponse) {
         log.info("Cancelling order with id: {}", paymentResponse.getOrderId());
         Order order = orderSagaHelper.findOrder(paymentResponse.getOrderId());

@@ -9,6 +9,12 @@ payment-service:
   payment-request-topic-name: payment-request
   payment-response-topic-name: payment-response
 
+outbox:
+  scheduler:
+    fixed-delay-ms: 2000
+    max-attempts: 5
+    processing-timeout-seconds: 60
+
 spring:
   jpa:
     open-in-view: false

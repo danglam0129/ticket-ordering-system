@@ -1,12 +1,11 @@
 package com.ticket.ordering.system.order.service.messaging.publisher.kafka;
 
 import com.ticket.ordering.system.kafka.order.avro.model.TicketApprovalRequestAvroModel;
-import com.ticket.ordering.system.kafka.producer.KafkaMessageHelper;
-import com.ticket.ordering.system.kafka.producer.service.KafkaProducer;
 import com.ticket.ordering.system.order.service.domain.config.OrderServiceConfigData;
 import com.ticket.ordering.system.order.service.domain.event.OrderPaidEvent;
 import com.ticket.ordering.system.order.service.domain.ports.output.message.publisher.ticketapproval.OrderPaidTicketRequestMessagePublisher;
 import com.ticket.ordering.system.order.service.messaging.mapper.OrderMessagingDataMapper;
+import com.ticket.ordering.system.order.service.messaging.outbox.OrderOutboxMessageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -16,17 +15,14 @@ public class PayOrderKafkaMessagePublisher implements OrderPaidTicketRequestMess
 
     private final OrderMessagingDataMapper orderMessagingDataMapper;
     private final OrderServiceConfigData orderServiceConfigData;
-    private final KafkaProducer<String, TicketApprovalRequestAvroModel> kafkaProducer;
-    private final KafkaMessageHelper orderKafkaMessageHelper;
+    private final OrderOutboxMessageHelper orderOutboxMessageHelper;
 
     public PayOrderKafkaMessagePublisher(OrderMessagingDataMapper orderMessagingDataMapper,
                                          OrderServiceConfigData orderServiceConfigData,
-                                         KafkaProducer<String, TicketApprovalRequestAvroModel> kafkaProducer,
-                                         KafkaMessageHelper orderKafkaMessageHelper) {
+                                         OrderOutboxMessageHelper orderOutboxMessageHelper) {
         this.orderMessagingDataMapper = orderMessagingDataMapper;
         this.orderServiceConfigData = orderServiceConfigData;
-        this.kafkaProducer = kafkaProducer;
-        this.orderKafkaMessageHelper = orderKafkaMessageHelper;
+        this.orderOutboxMessageHelper = orderOutboxMessageHelper;
     }
 
     @Override
@@ -38,19 +34,18 @@ public class PayOrderKafkaMessagePublisher implements OrderPaidTicketRequestMess
             TicketApprovalRequestAvroModel ticketApprovalRequestAvroModel =
                     orderMessagingDataMapper.orderPaidEventToTicketApprovalRequestAvroModel(domainEvent);
 
-            kafkaProducer.send(orderServiceConfigData.getTicketApprovalRequestTopicName(),
+            orderOutboxMessageHelper.save(orderId,
+                    domainEvent.getClass().getSimpleName(),
+                    orderServiceConfigData.getTicketApprovalRequestTopicName(),
                     orderId,
-                    ticketApprovalRequestAvroModel,
-                    orderKafkaMessageHelper.getKafkaCallback(
-                            orderServiceConfigData.getTicketApprovalResponseTopicName(),
-                            ticketApprovalRequestAvroModel,
-                            orderId,
-                            "TicketApprovalRequestAvroModel"));
+                    ticketApprovalRequestAvroModel.getSagaId(),
+                    ticketApprovalRequestAvroModel);
 
-            log.info("TicketApprovalRequestAvroModel sent to Kafka for order id: {}", orderId);
+            log.info("TicketApprovalRequestAvroModel stored in outbox for order id: {}", orderId);
         } catch (Exception e) {
-            log.error("Error while sending TicketApprovalRequestAvroModel message to Kafka with order id: {}, error: {}",
+            log.error("Error while storing TicketApprovalRequestAvroModel in outbox with order id: {}, error: {}",
                     orderId, e.getMessage());
+            throw new IllegalStateException("Error while storing TicketApprovalRequestAvroModel in outbox", e);
         }
     }
 }

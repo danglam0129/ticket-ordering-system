@@ -13,6 +13,12 @@ order-service:
   ticket-approval-request-topic-name: ticket-approval-request
   ticket-approval-response-topic-name: ticket-approval-response
 
+outbox:
+  scheduler:
+    fixed-delay-ms: 2000
+    max-attempts: 5
+    processing-timeout-seconds: 60
+
 spring:
   jpa:
     open-in-view: false

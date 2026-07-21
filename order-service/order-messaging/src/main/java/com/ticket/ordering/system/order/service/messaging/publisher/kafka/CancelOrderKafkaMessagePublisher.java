@@ -1,12 +1,11 @@
 package com.ticket.ordering.system.order.service.messaging.publisher.kafka;
 
 import com.ticket.ordering.system.kafka.order.avro.model.PaymentRequestAvroModel;
-import com.ticket.ordering.system.kafka.producer.KafkaMessageHelper;
-import com.ticket.ordering.system.kafka.producer.service.KafkaProducer;
 import com.ticket.ordering.system.order.service.domain.config.OrderServiceConfigData;
 import com.ticket.ordering.system.order.service.domain.event.OrderCancelledEvent;
 import com.ticket.ordering.system.order.service.domain.ports.output.message.publisher.payment.OrderCancelledPaymentRequestMessagePublisher;
 import com.ticket.ordering.system.order.service.messaging.mapper.OrderMessagingDataMapper;
+import com.ticket.ordering.system.order.service.messaging.outbox.OrderOutboxMessageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -16,17 +15,14 @@ public class CancelOrderKafkaMessagePublisher implements OrderCancelledPaymentRe
 
     private final OrderMessagingDataMapper orderMessagingDataMapper;
     private final OrderServiceConfigData orderServiceConfigData;
-    private final KafkaProducer<String, PaymentRequestAvroModel> kafkaProducer;
-    private final KafkaMessageHelper orderKafkaMessageHelper;
+    private final OrderOutboxMessageHelper orderOutboxMessageHelper;
 
     public CancelOrderKafkaMessagePublisher(OrderMessagingDataMapper orderMessagingDataMapper,
                                             OrderServiceConfigData orderServiceConfigData,
-                                            KafkaProducer<String, PaymentRequestAvroModel> kafkaProducer,
-                                            KafkaMessageHelper orderKafkaMessageHelper) {
+                                            OrderOutboxMessageHelper orderOutboxMessageHelper) {
         this.orderMessagingDataMapper = orderMessagingDataMapper;
         this.orderServiceConfigData = orderServiceConfigData;
-        this.kafkaProducer = kafkaProducer;
-        this.orderKafkaMessageHelper = orderKafkaMessageHelper;
+        this.orderOutboxMessageHelper = orderOutboxMessageHelper;
     }
 
     @Override
@@ -38,18 +34,18 @@ public class CancelOrderKafkaMessagePublisher implements OrderCancelledPaymentRe
             PaymentRequestAvroModel paymentRequestAvroModel =
                     orderMessagingDataMapper.orderCancelledEventToPaymentRequestAvroModel(domainEvent);
 
-            kafkaProducer.send(orderServiceConfigData.getPaymentRequestTopicName(),
+            orderOutboxMessageHelper.save(orderId,
+                    domainEvent.getClass().getSimpleName(),
+                    orderServiceConfigData.getPaymentRequestTopicName(),
                     orderId,
-                    paymentRequestAvroModel,
-                    orderKafkaMessageHelper.getKafkaCallback(orderServiceConfigData.getPaymentResponseTopicName(),
-                            paymentRequestAvroModel,
-                            orderId,
-                            "PaymentRequestAvroModel"));
+                    paymentRequestAvroModel.getSagaId(),
+                    paymentRequestAvroModel);
 
-            log.info("PaymentRequestAvroModel sent to Kafka for order id: {}", orderId);
+            log.info("PaymentRequestAvroModel stored in outbox for order id: {}", orderId);
         } catch (Exception e) {
-            log.error("Error while sending PaymentRequestAvroModel message to Kafka with order id: {}, error: {}",
+            log.error("Error while storing PaymentRequestAvroModel in outbox with order id: {}, error: {}",
                     orderId, e.getMessage());
+            throw new IllegalStateException("Error while storing PaymentRequestAvroModel in outbox", e);
         }
     }
 }

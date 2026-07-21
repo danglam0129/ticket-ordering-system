@@ -76,7 +76,7 @@ public class TicketMessagingDataMapper {
             OrderApprovalStatus orderApprovalStatus) {
         return TicketReservationResponseAvroModel.builder()
                 .id(UUID.randomUUID().toString())
-                .sagaId("")
+                .sagaId(ticketEvent.getOrderId().getValue().toString())
                 .orderId(ticketEvent.getOrderId().getValue().toString())
                 .ticketIds(ticketIds(ticketEvent))
                 .createdAt(ticketEvent.getCreatedAt().toInstant())
@@ -90,7 +90,7 @@ public class TicketMessagingDataMapper {
             OrderApprovalStatus orderApprovalStatus) {
         return TicketApprovalResponseAvroModel.builder()
                 .id(UUID.randomUUID().toString())
-                .sagaId("")
+                .sagaId(ticketEvent.getOrderId().getValue().toString())
                 .orderId(ticketEvent.getOrderId().getValue().toString())
                 .ticketId(firstTicketId(ticketEvent))
                 .createdAt(ticketEvent.getCreatedAt().toInstant())

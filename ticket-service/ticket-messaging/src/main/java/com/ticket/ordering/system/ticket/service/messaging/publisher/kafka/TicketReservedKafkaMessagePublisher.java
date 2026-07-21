@@ -1,12 +1,11 @@
 package com.ticket.ordering.system.ticket.service.messaging.publisher.kafka;
 
 import com.ticket.ordering.system.kafka.order.avro.model.TicketReservationResponseAvroModel;
-import com.ticket.ordering.system.kafka.producer.KafkaMessageHelper;
-import com.ticket.ordering.system.kafka.producer.service.KafkaProducer;
 import com.ticket.ordering.system.ticket.service.domain.config.TicketServiceConfigData;
 import com.ticket.ordering.system.ticket.service.domain.event.TicketReservedEvent;
 import com.ticket.ordering.system.ticket.service.domain.ports.output.message.publisher.ticketreservation.TicketReservedMessagePublisher;
 import com.ticket.ordering.system.ticket.service.messaging.mapper.TicketMessagingDataMapper;
+import com.ticket.ordering.system.ticket.service.messaging.outbox.TicketOutboxMessageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -15,18 +14,15 @@ import org.springframework.stereotype.Component;
 public class TicketReservedKafkaMessagePublisher implements TicketReservedMessagePublisher {
 
     private final TicketMessagingDataMapper ticketMessagingDataMapper;
-    private final KafkaProducer<String, TicketReservationResponseAvroModel> kafkaProducer;
     private final TicketServiceConfigData ticketServiceConfigData;
-    private final KafkaMessageHelper kafkaMessageHelper;
+    private final TicketOutboxMessageHelper ticketOutboxMessageHelper;
 
     public TicketReservedKafkaMessagePublisher(TicketMessagingDataMapper ticketMessagingDataMapper,
-                                               KafkaProducer<String, TicketReservationResponseAvroModel> kafkaProducer,
                                                TicketServiceConfigData ticketServiceConfigData,
-                                               KafkaMessageHelper kafkaMessageHelper) {
+                                               TicketOutboxMessageHelper ticketOutboxMessageHelper) {
         this.ticketMessagingDataMapper = ticketMessagingDataMapper;
-        this.kafkaProducer = kafkaProducer;
         this.ticketServiceConfigData = ticketServiceConfigData;
-        this.kafkaMessageHelper = kafkaMessageHelper;
+        this.ticketOutboxMessageHelper = ticketOutboxMessageHelper;
     }
 
     @Override
@@ -37,18 +33,17 @@ public class TicketReservedKafkaMessagePublisher implements TicketReservedMessag
         try {
             TicketReservationResponseAvroModel response =
                     ticketMessagingDataMapper.ticketReservedEventToTicketReservationResponseAvroModel(domainEvent);
-            kafkaProducer.send(ticketServiceConfigData.getTicketReservationResponseTopicName(),
+            ticketOutboxMessageHelper.save(orderId,
+                    domainEvent.getClass().getSimpleName(),
+                    ticketServiceConfigData.getTicketReservationResponseTopicName(),
                     orderId,
-                    response,
-                    kafkaMessageHelper.getKafkaCallback(
-                            ticketServiceConfigData.getTicketReservationResponseTopicName(),
-                            response,
-                            orderId,
-                            "TicketReservationResponseAvroModel"));
-            log.info("TicketReservationResponseAvroModel sent to Kafka for order id: {}", orderId);
+                    response.getSagaId(),
+                    response);
+            log.info("TicketReservationResponseAvroModel stored in outbox for order id: {}", orderId);
         } catch (Exception e) {
-            log.error("Error while sending TicketReservationResponseAvroModel for order id: {}, error: {}",
+            log.error("Error while storing TicketReservationResponseAvroModel in outbox for order id: {}, error: {}",
                     orderId, e.getMessage());
+            throw new IllegalStateException("Error while storing TicketReservationResponseAvroModel in outbox", e);
         }
     }
 }
