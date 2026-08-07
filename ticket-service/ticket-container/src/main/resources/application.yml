@@ -10,9 +10,13 @@ ticket-service:
   ticket-reservation-response-topic-name: ticket-reservation-response
   ticket-approval-request-topic-name: ticket-approval-request
   ticket-approval-response-topic-name: ticket-approval-response
+  redis-reservation-holds-enabled: ${TICKET_SERVICE_REDIS_RESERVATION_HOLDS_ENABLED:false}
+  reservation-hold-key-prefix: ${TICKET_SERVICE_RESERVATION_HOLD_KEY_PREFIX:ticket:reservation:hold:}
+  reservation-hold-ttl-seconds: ${TICKET_SERVICE_RESERVATION_HOLD_TTL_SECONDS:600}
 
 outbox:
   scheduler:
+    enabled: ${OUTBOX_SCHEDULER_ENABLED:true}
     fixed-delay-ms: 2000
     max-attempts: 5
     processing-timeout-seconds: 60
@@ -31,6 +35,10 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
   sql:
     init:
       mode: always

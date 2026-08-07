@@ -11,6 +11,7 @@ payment-service:
 
 outbox:
   scheduler:
+    enabled: ${OUTBOX_SCHEDULER_ENABLED:true}
     fixed-delay-ms: 2000
     max-attempts: 5
     processing-timeout-seconds: 60

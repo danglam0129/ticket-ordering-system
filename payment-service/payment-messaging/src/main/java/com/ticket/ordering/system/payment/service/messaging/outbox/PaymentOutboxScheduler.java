@@ -6,6 +6,7 @@ import com.ticket.ordering.system.kafka.producer.service.KafkaProducer;
 import com.ticket.ordering.system.payment.service.domain.outbox.PaymentOutboxMessage;
 import com.ticket.ordering.system.payment.service.domain.ports.output.repository.PaymentOutboxRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.time.Instant;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "outbox.scheduler.enabled", havingValue = "true", matchIfMissing = true)
 public class PaymentOutboxScheduler {
 
     private final PaymentOutboxRepository paymentOutboxRepository;

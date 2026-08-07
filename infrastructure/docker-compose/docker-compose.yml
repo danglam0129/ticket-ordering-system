@@ -2,6 +2,14 @@ services:
   postgres:
     image: postgres:${POSTGRES_VERSION:-14}
     container_name: ticket-postgres
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_wal_senders=10"
+      - "-c"
+      - "max_replication_slots=10"
     ports:
       - "${POSTGRES_HOST_PORT:-55432}:5432"
     environment:
@@ -15,6 +23,19 @@ services:
       retries: 10
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ticket-ordering-system
+
+  redis:
+    image: redis:${REDIS_VERSION:-7.2-alpine}
+    container_name: ticket-redis
+    ports:
+      - "${REDIS_HOST_PORT:-56379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - ticket-ordering-system
 
@@ -135,6 +156,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: admin
       KAFKA_CONFIG_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      OUTBOX_SCHEDULER_ENABLED: "false"
     depends_on:
       postgres:
         condition: service_healthy
@@ -162,6 +184,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: admin
       KAFKA_CONFIG_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      OUTBOX_SCHEDULER_ENABLED: "false"
     depends_on:
       postgres:
         condition: service_healthy
@@ -189,8 +212,15 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: admin
       KAFKA_CONFIG_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      OUTBOX_SCHEDULER_ENABLED: "false"
+      TICKET_SERVICE_REDIS_RESERVATION_HOLDS_ENABLED: "true"
+      TICKET_SERVICE_RESERVATION_HOLD_TTL_SECONDS: 600
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       kafka-1:
         condition: service_healthy
@@ -219,6 +249,61 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - ticket-ordering-system
+
+  debezium-connect:
+    image: quay.io/debezium/connect:${DEBEZIUM_VERSION:-2.7}
+    container_name: ticket-debezium-connect
+    ports:
+      - "${DEBEZIUM_CONNECT_HOST_PORT:-8083}:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      GROUP_ID: ticket-ordering-debezium-connect
+      CONFIG_STORAGE_TOPIC: ticket_ordering_connect_configs
+      OFFSET_STORAGE_TOPIC: ticket_ordering_connect_offsets
+      STATUS_STORAGE_TOPIC: ticket_ordering_connect_statuses
+      KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    networks:
+      - ticket-ordering-system
+
+  debezium-connector-init:
+    image: curlimages/curl:${CURL_VERSION:-8.8.0}
+    container_name: ticket-debezium-connector-init
+    volumes:
+      - ./debezium:/debezium:ro
+    command:
+      - "sh"
+      - "-c"
+      - |
+        until curl -fsS http://debezium-connect:8083/connectors >/dev/null; do
+          echo "Waiting for Debezium Connect..."
+          sleep 2
+        done
+        echo "Waiting for application services to initialize schemas..."
+        sleep 30
+        curl -fsS -X PUT \
+          -H "Content-Type: application/json" \
+          --data @/debezium/postgres-outbox-connector.json \
+          http://debezium-connect:8083/connectors/ticket-ordering-outbox-connector/config
+    depends_on:
+      debezium-connect:
+        condition: service_started
+      order-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      ticket-service:
+        condition: service_started
     networks:
       - ticket-ordering-system
 

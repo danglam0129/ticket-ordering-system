@@ -6,6 +6,7 @@ import com.ticket.ordering.system.kafka.producer.service.KafkaProducer;
 import com.ticket.ordering.system.ticket.service.domain.outbox.TicketOutboxMessage;
 import com.ticket.ordering.system.ticket.service.domain.ports.output.repository.TicketOutboxRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.time.Instant;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "outbox.scheduler.enabled", havingValue = "true", matchIfMissing = true)
 public class TicketOutboxScheduler {
 
     private final TicketOutboxRepository ticketOutboxRepository;

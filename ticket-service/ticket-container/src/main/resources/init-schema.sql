@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS ticket.ticket_outbox
     saga_id character varying NOT NULL,
     aggregate_id character varying NOT NULL,
     event_type character varying NOT NULL,
+    type character varying GENERATED ALWAYS AS (event_type) STORED,
     topic_name character varying NOT NULL,
     message_key character varying NOT NULL,
     payload_type character varying NOT NULL,
