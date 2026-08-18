@@ -10,6 +10,8 @@ import com.ticket.ordering.system.customer.service.domain.dto.register.RegisterC
 import com.ticket.ordering.system.customer.service.domain.dto.token.RefreshTokenCommand;
 import com.ticket.ordering.system.customer.service.domain.ports.input.service.CustomerApplicationService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,28 +32,30 @@ public class CustomerController {
     }
 
     @PostMapping("/register")
-    public RegisterCustomerResponse registerCustomer(
+    public ResponseEntity<RegisterCustomerResponse> registerCustomer(
             @Valid @RequestBody RegisterCustomerCommand registerCustomerCommand) {
-        return customerApplicationService.registerCustomer(registerCustomerCommand);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(customerApplicationService.registerCustomer(registerCustomerCommand));
     }
 
     @PostMapping("/login")
-    public AuthenticationResponse login(@Valid @RequestBody LoginCustomerCommand loginCustomerCommand) {
-        return customerApplicationService.login(loginCustomerCommand);
+    public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginCustomerCommand loginCustomerCommand) {
+        return ResponseEntity.ok(customerApplicationService.login(loginCustomerCommand));
     }
 
     @PostMapping("/token/refresh")
-    public AuthenticationResponse refreshToken(@Valid @RequestBody RefreshTokenCommand refreshTokenCommand) {
-        return customerApplicationService.refreshToken(refreshTokenCommand);
+    public ResponseEntity<AuthenticationResponse> refreshToken(
+            @Valid @RequestBody RefreshTokenCommand refreshTokenCommand) {
+        return ResponseEntity.ok(customerApplicationService.refreshToken(refreshTokenCommand));
     }
 
     @PostMapping("/logout")
-    public LogoutResponse logout(@Valid @RequestBody LogoutCommand logoutCommand) {
-        return customerApplicationService.logout(logoutCommand);
+    public ResponseEntity<LogoutResponse> logout(@Valid @RequestBody LogoutCommand logoutCommand) {
+        return ResponseEntity.ok(customerApplicationService.logout(logoutCommand));
     }
 
     @GetMapping("/{customerId}")
-    public CustomerResponse getCustomer(@PathVariable UUID customerId) {
-        return customerApplicationService.findCustomer(customerId);
+    public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID customerId) {
+        return ResponseEntity.ok(customerApplicationService.findCustomer(customerId));
     }
 }

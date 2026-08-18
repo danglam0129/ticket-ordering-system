@@ -6,6 +6,8 @@ import com.ticket.ordering.system.order.service.domain.dto.track.TrackOrderQuery
 import com.ticket.ordering.system.order.service.domain.dto.track.TrackOrderResponse;
 import com.ticket.ordering.system.order.service.domain.ports.input.service.OrderApplicationService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,14 +28,15 @@ public class OrderController {
     }
 
     @PostMapping
-    public CreateOrderResponse createOrder(@Valid @RequestBody CreateOrderCommand createOrderCommand) {
-        return orderApplicationService.createOrder(createOrderCommand);
+    public ResponseEntity<CreateOrderResponse> createOrder(@Valid @RequestBody CreateOrderCommand createOrderCommand) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(orderApplicationService.createOrder(createOrderCommand));
     }
 
     @GetMapping("/{trackingId}")
-    public TrackOrderResponse trackOrder(@PathVariable UUID trackingId) {
-        return orderApplicationService.trackOrder(TrackOrderQuery.builder()
+    public ResponseEntity<TrackOrderResponse> trackOrder(@PathVariable UUID trackingId) {
+        return ResponseEntity.ok(orderApplicationService.trackOrder(TrackOrderQuery.builder()
                 .orderTrackingId(trackingId)
-                .build());
+                .build()));
     }
 }

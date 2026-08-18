@@ -5,10 +5,9 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.stream.Collectors;
 
@@ -16,21 +15,18 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ResponseBody
     @ExceptionHandler(value = {Exception.class})
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorDTO handleException(Exception exception) {
+    public ResponseEntity<ErrorDTO> handleException(Exception exception) {
         log.error(exception.getMessage(), exception);
-        return ErrorDTO.builder()
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorDTO.builder()
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message("Unexpected error!")
-                .build();
+                .build());
     }
 
-    @ResponseBody
     @ExceptionHandler(value = {ValidationException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorDTO handleException(ValidationException validationException) {
+    public ResponseEntity<ErrorDTO> handleException(ValidationException validationException) {
         ErrorDTO errorDTO;
         if (validationException instanceof ConstraintViolationException) {
             String violations = extractViolationsFromException((ConstraintViolationException) validationException);
@@ -47,7 +43,7 @@ public class GlobalExceptionHandler {
                     .message(exceptionMessage)
                     .build();
         }
-        return errorDTO;
+        return ResponseEntity.badRequest().body(errorDTO);
     }
 
     private String extractViolationsFromException(ConstraintViolationException validationException) {
